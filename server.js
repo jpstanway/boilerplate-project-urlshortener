@@ -1,4 +1,7 @@
+
 'use strict';
+
+require('dotenv').config();
 
 var express = require('express');
 var mongo = require('mongodb');
@@ -12,7 +15,7 @@ var app = express();
 var port = process.env.PORT || 3000;
 
 /** this project needs a db !! **/ 
-// mongoose.connect(process.env.MONGOLAB_URI);
+mongoose.connect(process.env.MONGOLAB_URI);
 
 app.use(cors());
 
