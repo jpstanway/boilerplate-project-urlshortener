@@ -57,15 +57,26 @@ app.get("/api/hello", function (req, res) {
 
 // mount url shortener post handler
 app.post('/api/shorturl/new', function(req, res) {
-  dns.lookup(req.body.url, function(err) {
+  // check to make sure link is in proper format
+  let regexp = /^(http(s)?:\/\/)?(www.)?[A-Za-z0-9-]+.com(\/[A-Za-z0-9-]*)*$/igm;
+  let url = req.body.url;
+
+  // if format is ok, remove protocol before testing
+  if(url.search(regexp) > -1) {
+    url = req.body.url.replace(/http(s)?:\/\//i, '');
+  }
+
+  // test url and pass error or save to db
+  dns.lookup(url, function(err) {
     if(err) {
       res.send({error: 'invalid URL'});
     } else {
-      var url = new URL({original_url: req.body.url});
+      // save url to database
+      /*var url = new URL({original_url: req.body.url});
       url.save(function(err, data) {
         if(err) return handleError(err);
-        console.log(data);
-      });
+        res.send({original_url: data.original_url, short_url: data.short_url});
+      });*/
     }
   });
 });
