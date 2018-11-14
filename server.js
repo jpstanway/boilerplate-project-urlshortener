@@ -59,27 +59,42 @@ app.get("/api/hello", function (req, res) {
 app.post('/api/shorturl/new', function(req, res) {
   // check to make sure link is in proper format
   let regexp = /^(http(s)?:\/\/)?(www.)?[A-Za-z0-9-]+.com(\/[A-Za-z0-9-]*)*$/igm;
-  let url = req.body.url;
+  let testURL = req.body.url;
 
   // if format is ok, remove protocol before testing
-  if(url.search(regexp) > -1) {
-    url = req.body.url.replace(/http(s)?:\/\//i, '');
+  if(testURL.search(regexp) > -1) {
+    testURL = req.body.url.replace(/http(s)?:\/\//i, '');
   }
 
+  // reassign subdomain if applicable
+
+
   // test url and pass error or save to db
-  dns.lookup(url, function(err) {
+  dns.lookup(testURL, function(err) {
     if(err) {
       res.send({error: 'invalid URL'});
     } else {
-      // save url to database
-      /*var url = new URL({original_url: req.body.url});
-      url.save(function(err, data) {
-        if(err) return handleError(err);
-        res.send({original_url: data.original_url, short_url: data.short_url});
-      });*/
+      // check to make sure url is not a duplicate 
+      URL.findOne({original_url: testURL}, function(err, data) {
+        if(err) handleError(err);
+
+        if(data) {
+          // if it is, return values stored in db
+          res.send({original_url: data.original_url, short_url: data.short_url});
+        } else {
+          // if not, save url to database
+          const url = new URL({original_url: testURL});
+          url.save(function(err, data) {
+            if(err) return handleError(err);
+            res.send({original_url: data.original_url, short_url: data.short_url});
+          });
+        }
+      });
     }
   });
 });
+
+// redirect short url to original url
 
 
 app.listen(port, function () {
