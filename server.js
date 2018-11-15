@@ -76,7 +76,7 @@ app.post('/api/shorturl/new', function(req, res) {
     } else {
       // check to make sure url is not a duplicate 
       URL.findOne({original_url: testURL}, function(err, data) {
-        if(err) handleError(err);
+        if(err) res.send('Error finding URL');
 
         if(data) {
           // if it is, return values stored in db
@@ -85,7 +85,8 @@ app.post('/api/shorturl/new', function(req, res) {
           // if not, save url to database
           const url = new URL({original_url: testURL});
           url.save(function(err, data) {
-            if(err) return handleError(err);
+            if(err) return res.send('Error saving URL to database');
+
             res.send({original_url: data.original_url, short_url: data.short_url});
           });
         }
@@ -95,7 +96,14 @@ app.post('/api/shorturl/new', function(req, res) {
 });
 
 // redirect short url to original url
-
+app.get('/api/shorturl/:url', function(req, res) {
+  URL.findOne({short_url: req.params.url}, function(err, data) {
+    if(err) return res.send('Error redirecting url ' + err);
+    
+    // redirect to original url
+    res.redirect(301, `https://${data.original_url}`);
+  });
+});
 
 app.listen(port, function () {
   console.log('Node.js listening ...');
