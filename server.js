@@ -64,11 +64,15 @@ app.post('/api/shorturl/new', function(req, res) {
   // if format is ok, remove protocol before testing
   if(testURL.search(regexp) > -1) {
     testURL = req.body.url.replace(/http(s)?:\/\//i, '');
+
+    // check for subdir in url
+    if (testURL.search(/\/([A-Za-z0-9-]+)/i) > -1) {
+      // swap www. for subdomain
+      let swap = /(www.)?([A-Za-z0-9-]*.com)(\/)([A-Za-z0-9-]+)(\/[A-Za-z-0-9-]*)?/i;
+      testURL = testURL.replace(swap, '$4.$2');
+    }
   }
-
-  // reassign subdomain if applicable
-
-
+  
   // test url and pass error or save to db
   dns.lookup(testURL, function(err) {
     if(err) {
@@ -98,7 +102,7 @@ app.post('/api/shorturl/new', function(req, res) {
 // redirect short url to original url
 app.get('/api/shorturl/:url', function(req, res) {
   URL.findOne({short_url: req.params.url}, function(err, data) {
-    if(err) return res.send('Error redirecting url ' + err);
+    if(err) return res.send('Error redirecting url');
     
     // redirect to original url
     res.redirect(301, `https://${data.original_url}`);
