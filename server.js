@@ -70,6 +70,9 @@ app.post('/api/shorturl/new', function(req, res) {
       // swap www. for subdomain
       let swap = /(www.)?([A-Za-z0-9-]*.com)(\/)([A-Za-z0-9-]+)(\/[A-Za-z-0-9-]*)?/i;
       testURL = testURL.replace(swap, '$4.$2');
+    } else if (testURL.search(/www./i) === -1) {
+      // also if there is no leading www., add it in
+      testURL = `www.${testURL}`;
     }
   }
   
